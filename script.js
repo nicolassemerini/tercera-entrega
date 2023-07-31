@@ -82,18 +82,15 @@ function registrarReserva(
 
   const resultado = document.getElementById("resultado");
   resultado.innerHTML =
-    nombre + " ha reservado para la fecha " + fecha + " a las " + hora;
-
-  alert(
-    "GRACIAS! Su reserva ha sido registrada para la fecha " +
-      fecha +
-      " a las " +
-      hora +
-      " para " +
-      cantidadPersonas +
-      " persona/s y el total a abonar es de: " +
-      totalConDescuento
-  );
+    ". GRACIAS! Su reserva ha sido registrada para la fecha " +
+    fecha +
+    " a las " +
+    hora +
+    " para " +
+    cantidadPersonas +
+    " persona/s y el total a abonar es de: " +
+    totalConDescuento
+    ;
 
   agregarReserva();
 }
@@ -116,14 +113,15 @@ function agregarReserva() {
 
 function modificarReserva() {
   if (reservas.length === 0) {
-    alert("No hay reservas registradas.");
+    const resultado = document.getElementById("resultado");
+    resultado.innerHTML ="No hay reservas registradas.";
     return;
   }
 
   let indiceReserva = prompt(
     "Ingrese el numero de reserva que desea modificar (1-" +
-      reservas.length +
-      "):"
+    reservas.length +
+    "):"
   );
 
   if (
@@ -131,7 +129,8 @@ function modificarReserva() {
     indiceReserva < 1 ||
     indiceReserva > reservas.length
   ) {
-    alert("Numero de reserva invalido.");
+    const resultado = document.getElementById("resultado");
+  resultado.innerHTML ="Numero de reserva invalido.";
     return;
   }
 
@@ -139,15 +138,15 @@ function modificarReserva() {
 
   let confirmacion = prompt(
     "Desea modificar la siguiente reserva?" +
-      "\nNombre: " +
-      reserva.nombre +
-      "\nFecha: " +
-      reserva.fecha +
-      "\nHora: " +
-      reserva.hora +
-      "\nTotal a abonar: " +
-      reserva.totalConDescuento +
-      "\n(Responder SI o NO)"
+    "\nNombre: " +
+    reserva.nombre +
+    "\nFecha: " +
+    reserva.fecha +
+    "\nHora: " +
+    reserva.hora +
+    "\nTotal a abonar: " +
+    reserva.totalConDescuento +
+    "\n(Responder SI o NO)"
   ).toUpperCase();
 
   if (confirmacion === "SI") {
@@ -173,11 +172,13 @@ function modificarReserva() {
         reserva.cantidadMenores * valorMenores;
     }
 
-    alert("Reserva modificada exitosamente.");
+    const resultado = document.getElementById("resultado");
+  resultado.innerHTML ="Reserva modificada exitosamente.";
     guardarReservasEnLocalStorage();
     mostrarReservas();
   } else {
-    alert("No se realizo ninguna modificacion.");
+    const resultado = document.getElementById("resultado");
+  resultado.innerHTML ="No se realizo ninguna modificacion.";
   }
 }
 
@@ -198,11 +199,13 @@ function mostrarReservas() {
       reserva.totalConDescuento +
       "\n-----------------------\n";
   }
-  alert(listaReservas);
+  const resultado = document.getElementById("resultado");
+  resultado.innerHTML =listaReservas;
 }
 function verTodasLasReservas() {
   if (reservas.length === 0) {
-    alert("No hay reservas almacenadas.");
+    const resultado = document.getElementById("resultado");
+  resultado.innerHTML ="No hay reservas almacenadas.";
     return;
   }
 
@@ -222,10 +225,17 @@ function verTodasLasReservas() {
       reserva.totalConDescuento +
       "\n-----------------------\n";
   }
-  alert(listaReservas);
+  const resultado = document.getElementById("resultado");
+  resultado.innerHTML =listaReservas;
+}
+function eliminarReservas() {
+  console.log("mensaje")
+  reservas = "";
+  localStorage.clear();
+  const resultado = document.getElementById("resultado");
+  resultado.innerHTML ="se han eliminado las reservas";
 }
 
 
-// Cargar reservas desde el LocalStorage
-cargarReservasDesdeLocalStorage();
+
 
