@@ -1,8 +1,19 @@
+
+
+
 let reservas = [];
 const valorAdultos = 1000;
 const valorMenores = 2000;
 const valorDescuento = 0.1;
 const descuentoPorCantidad = 4;
+
+function mostrarMensaje(mensaje) {
+  var mensajes = "";
+  mensajes += mensaje + "<br>";
+
+  var resultadoDiv = document.getElementById("resultado");
+  resultadoDiv.innerHTML = mensajes;
+}
 
 function cargarReservasDesdeLocalStorage() {
   const reservasJSON = localStorage.getItem("reservas");
@@ -16,48 +27,22 @@ function guardarReservasEnLocalStorage() {
   localStorage.setItem("reservas", reservasJSON);
 }
 
-
 function registrarCondiciones() {
-  let tipoMenu; // Declarar la variable tipoMenu
+  const nombre = document.getElementById("nombre").value;
+  const cantidadAdultos = document.getElementById("adultos").value;
+  const cantidadMenores = document.getElementById("menores").value;
+  const tipoMenu = document.getElementById("tipoMenu").value; // Corregido el ID
 
-  do {
-    tipoMenu = parseInt(prompt("Elija un numero de menu (1-3):"));
-    switch (tipoMenu) {
-      case 1:
-        console.log("Ha elegido el menu " + tipoMenu);
-        break;
-      case 2:
-        console.log("Ha elegido el menu " + tipoMenu);
-        break;
-      case 3:
-        console.log("Ha elegido el menu " + tipoMenu);
-        break;
-      default:
-        console.log("No ha elegido ningun tipo de menu");
-    }
-  } while (tipoMenu < 1 || tipoMenu > 3);
+  const fecha = document.getElementById("fecha").value;
+  const hora = document.getElementById("hora").value;
 
-
-  const nombre = prompt("Ingrese nombre y apellido");
-  const cantidadAdultos = parseInt(prompt("Cantidad de adultos"));
-  const cantidadMenores = parseInt(prompt("Cantidad de menores"));
-  const fecha = prompt("Fecha");
-  const hora = prompt("Hora");
-
-  registrarReserva(nombre, cantidadAdultos, cantidadMenores, fecha, hora);
+  registrarReserva(nombre, cantidadAdultos, cantidadMenores, tipoMenu, fecha, hora);
 }
 
-function registrarReserva(
-  nombre,
-  cantidadAdultos,
-  cantidadMenores,
-  fecha,
-  hora
-) {
+function registrarReserva(nombre, cantidadAdultos, cantidadMenores, tipoMenu, fecha, hora) {
   const precioAdultos = cantidadAdultos * valorAdultos;
   const precioMenores = cantidadMenores * valorMenores;
-
-  const cantidadPersonas = cantidadAdultos + cantidadMenores;
+  const cantidadPersonas = parseInt(cantidadAdultos) + parseInt(cantidadMenores); // Convertir a números enteros
 
   let total, totalConDescuento;
 
@@ -71,8 +56,9 @@ function registrarReserva(
 
   const reserva = {
     nombre: nombre,
-    cantidadAdultos: cantidadAdultos,
-    cantidadMenores: cantidadMenores,
+    cantidadAdultos: parseInt(cantidadAdultos), // Convertir a números enteros
+    cantidadMenores: parseInt(cantidadMenores), // Convertir a números enteros
+    tipoMenu: tipoMenu,
     fecha: fecha,
     hora: hora,
     totalConDescuento: totalConDescuento,
@@ -80,107 +66,153 @@ function registrarReserva(
 
   reservas.push(reserva);
 
-  const resultado = document.getElementById("resultado");
-  resultado.innerHTML =
-    ". GRACIAS! Su reserva ha sido registrada para la fecha " +
+  mostrarMensaje(". GRACIAS! Su reserva ha sido registrada para la fecha " +
     fecha +
     " a las " +
     hora +
     " para " +
     cantidadPersonas +
     " persona/s y el total a abonar es de: " +
-    totalConDescuento
-    ;
+    totalConDescuento);
 
   agregarReserva();
 }
 
 function agregarReserva() {
-  let opcion = prompt("Desea agregar otra reserva? (SI/NO)").toUpperCase();
-  if (opcion === "SI") {
-    registrarCondiciones();
-  } else {
-    guardarReservasEnLocalStorage();
-    mostrarReservas();
-    let opcionModificar = prompt(
-      "Desea modificar alguna reserva? (SI/NO)"
-    ).toUpperCase();
-    if (opcionModificar === "SI") {
-      modificarReserva();
+  Swal.fire({
+    title: "¿Desea agregar otra reserva?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "SI",
+    cancelButtonText: "NO"
+  }).then((result) => {
+    if (result.isConfirmed) {
+     
+      document.getElementById("nombre").value = "";
+      document.getElementById("adultos").value = "";
+      document.getElementById("menores").value = "";
+      document.getElementById("fecha").value = "";
+      document.getElementById("hora").value = "";
+    } else {
+      guardarReservasEnLocalStorage();
+      mostrarReservas();
+      Swal.fire({
+        title: "¿Desea modificar alguna reserva?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "SI",
+        cancelButtonText: "NO"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          modificarReserva();
+        }
+      });
     }
-  }
+  });
 }
+
 
 function modificarReserva() {
   if (reservas.length === 0) {
     const resultado = document.getElementById("resultado");
-    resultado.innerHTML ="No hay reservas registradas.";
+    resultado.innerHTML = "No hay reservas registradas.";
     return;
   }
 
-  let indiceReserva = prompt(
-    "Ingrese el numero de reserva que desea modificar (1-" +
-    reservas.length +
-    "):"
-  );
+  Swal.fire({
+    title: "Modificar Reserva",
+    input: "select",
+    inputOptions: (() => {
+      let options = {};
+      for (let i = 0; i < reservas.length; i++) {
+        let reserva = reservas[i];
+        options[i + 1] = `Número de reserva: ${i + 1} - ${reserva.nombre}`;
+      }
+      return options;
+    })(),
+    inputPlaceholder: "Seleccione una reserva",
+    showCancelButton: true,
+    confirmButtonText: "Modificar",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const indiceReserva = parseInt(result.value);
+      if (isNaN(indiceReserva) || indiceReserva < 1 || indiceReserva > reservas.length) {
+        Swal.fire("Error", "Número de reserva inválido.", "error");
+        return;
+      }
 
-  if (
-    isNaN(indiceReserva) ||
-    indiceReserva < 1 ||
-    indiceReserva > reservas.length
-  ) {
-    const resultado = document.getElementById("resultado");
-  resultado.innerHTML ="Numero de reserva invalido.";
-    return;
-  }
+      const reserva = reservas[indiceReserva - 1];
+      Swal.mixin({
+        input: "text",
+        confirmButtonText: "Siguiente",
+        cancelButtonText: "Cancelar",
+        showCancelButton: true,
+        progressSteps: ["1", "2", "3", "4", "5", "6"],
+      }).queue([
+        {
+          title: "Modificar Tipo de Menú",
+          text: "Ingrese el nuevo tipo de menú:",
+          inputValue: reserva.tipoMenu,
+          inputPlaceholder: "Menú 1, Menú 2, Menú 3",
+        },
+        {
+          title: "Modificar Cantidad de Adultos",
+          text: "Ingrese la nueva cantidad de adultos:",
+          inputValue: reserva.cantidadAdultos.toString(),
+          inputPlaceholder: "0",
+        },
+        {
+          title: "Modificar Cantidad de Niños",
+          text: "Ingrese la nueva cantidad de niños:",
+          inputValue: reserva.cantidadMenores.toString(),
+          inputPlaceholder: "0",
+        },
+        {
+          title: "Modificar Nombre",
+          text: "Ingrese el nuevo nombre:",
+          inputValue: reserva.nombre,
+          inputPlaceholder: "Nombre y Apellido",
+        },
+        {
+          title: "Modificar Fecha",
+          text: "Seleccione la nueva fecha:",
+          input: "date",
+          inputValue: reserva.fecha,
+        },
+        {
+          title: "Modificar Hora",
+          text: "Seleccione la nueva hora:",
+          input: "time",
+          inputValue: reserva.hora,
+        },
+      ]).then((result) => {
+        if (!result.dismiss) {
+          const [
+            nuevoTipoMenu,
+            nuevaCantidadAdultos,
+            nuevaCantidadMenores,
+            nuevoNombre,
+            nuevaFecha,
+            nuevaHora,
+          ] = result.value;
+          
+          reserva.tipoMenu = nuevoTipoMenu;
+          reserva.cantidadAdultos = parseInt(nuevaCantidadAdultos);
+          reserva.cantidadMenores = parseInt(nuevaCantidadMenores);
+          reserva.nombre = nuevoNombre;
+          reserva.fecha = nuevaFecha;
+          reserva.hora = nuevaHora;
 
-  let reserva = reservas[indiceReserva - 1];
-
-  let confirmacion = prompt(
-    "Desea modificar la siguiente reserva?" +
-    "\nNombre: " +
-    reserva.nombre +
-    "\nFecha: " +
-    reserva.fecha +
-    "\nHora: " +
-    reserva.hora +
-    "\nTotal a abonar: " +
-    reserva.totalConDescuento +
-    "\n(Responder SI o NO)"
-  ).toUpperCase();
-
-  if (confirmacion === "SI") {
-    reserva.nombre = prompt("Nuevo nombre y apellido:", reserva.nombre);
-    reserva.cantidadAdultos = parseInt(
-      prompt("Nueva cantidad de adultos:", reserva.cantidadAdultos)
-    );
-    reserva.cantidadMenores = parseInt(
-      prompt("Nueva cantidad de menores:", reserva.cantidadMenores)
-    );
-    reserva.fecha = prompt("Nueva fecha:", reserva.fecha);
-    reserva.hora = prompt("Nueva hora:", reserva.hora);
-
-    let cantidadPersonas = reserva.cantidadAdultos + reserva.cantidadMenores;
-    if (cantidadPersonas >= descuentoPorCantidad) {
-      let total =
-        reserva.cantidadAdultos * valorAdultos +
-        reserva.cantidadMenores * valorMenores;
-      reserva.totalConDescuento = total - total * valorDescuento;
-    } else {
-      reserva.totalConDescuento =
-        reserva.cantidadAdultos * valorAdultos +
-        reserva.cantidadMenores * valorMenores;
+          guardarReservasEnLocalStorage();
+          mostrarReservas();
+        }
+      });
     }
-
-    const resultado = document.getElementById("resultado");
-  resultado.innerHTML ="Reserva modificada exitosamente.";
-    guardarReservasEnLocalStorage();
-    mostrarReservas();
-  } else {
-    const resultado = document.getElementById("resultado");
-  resultado.innerHTML ="No se realizo ninguna modificacion.";
-  }
+  });
 }
+
+
 
 function mostrarReservas() {
   let listaReservas = "Reservas:\n";
@@ -229,13 +261,11 @@ function verTodasLasReservas() {
   resultado.innerHTML =listaReservas;
 }
 function eliminarReservas() {
-  console.log("mensaje")
-  reservas = "";
+  console.log("mensaje");
+  reservas = [];
   localStorage.clear();
   const resultado = document.getElementById("resultado");
-  resultado.innerHTML ="se han eliminado las reservas";
+  resultado.innerHTML = "Se han eliminado las reservas";
 }
-
-
 
 
